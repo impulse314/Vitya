@@ -34,8 +34,11 @@ public class PlayerController : MonoBehaviour
             if (Input.GetKey(KeyCode.LeftShift)) 
             {
                 speed = 8f;
+                animator.SetFloat("speed", Vector3.ClampMagnitude(directionVector, 1f).magnitude);
             }        //здесь надо сделать норм спринт
-            else { speed = 4f; }
+            else { speed = 4f;
+                animator.SetFloat("speed", Vector3.ClampMagnitude(directionVector, 0.7f).magnitude);
+            }
 
             float rotationAngle = Mathf.Atan2(directionVector.x, directionVector.z) * Mathf.Rad2Deg + characterCamera.eulerAngles.y;            //формируем угол поворота, подмешивая сюда поворот камеры по горизонтали
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, rotationAngle, ref smoothVelocity, smoothTime);                        //сглаживаем, чтоб не дергался
@@ -43,7 +46,9 @@ public class PlayerController : MonoBehaviour
             transform.rotation = Quaternion.Euler(0f, rotationAngle, 0f);               //поворачиваем модель
             Vector3 move = Quaternion.Euler(0f, rotationAngle, 0f)*Vector3.forward;     //формируем вектор движения модели
             controller.Move(move.normalized * speed * Time.deltaTime);                  //двигаем модель
-            }
-        animator.SetFloat("speed", Vector3.ClampMagnitude(directionVector, 1).magnitude);       //в аниматор передаем текущую длину вектора в качестве скорости движения персонажа, чтобы играть соответствующую анимацию
+            directionVector = move;    
+        }
+        else
+            animator.SetFloat("speed", Vector3.ClampMagnitude(directionVector, 0f).magnitude);//в аниматор передаем текущую длину вектора в качестве скорости движения персонажа, чтобы играть соответствующую анимацию
     }
 }
