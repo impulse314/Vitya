@@ -14,7 +14,7 @@ public class PlayerController : MonoBehaviour
 
     public LayerMask groundLayer;           //на случай, если понадобятся рэйкасты
     public float JumpForce=2f;              //сила прыжка
-    public float gravity = 1f;            //сила тяжести, которая будет опускать героя на землю
+    public float gravity = 0.83f;            //сила тяжести, которая будет опускать героя на землю
     void Start()
     {
         animator = GetComponent<Animator>();    //при старте скрипта получаем аниматор персонажа
@@ -26,27 +26,35 @@ public class PlayerController : MonoBehaviour
         float v = Input.GetAxisRaw("Vertical");         //получили по вертикали             [0f, 1f]
 
         Vector3 directionVector = new Vector3(h, 0f, v).normalized;     //вектор направления персонажа
-        directionVector.y += gravity * Time.deltaTime;
+        //directionVector.y += gravity * Time.deltaTime;
         Vector3 jumpVector = directionVector * speed;
 
         if (directionVector.magnitude > Mathf.Abs(0.05f))   //если длина вектора больше -0.05||0.05, то
         {
-            if (Input.GetKey(KeyCode.LeftShift)) 
+            if (Input.GetKey(KeyCode.LeftShift))
             {
                 speed = 8f;
                 animator.SetFloat("speed", Vector3.ClampMagnitude(directionVector, 1f).magnitude);
             }        //здесь надо сделать норм спринт
-            else { speed = 4f;
+            else
+            {
+                speed = 4f;
                 animator.SetFloat("speed", Vector3.ClampMagnitude(directionVector, 0.7f).magnitude);
             }
 
+            
+
             float rotationAngle = Mathf.Atan2(directionVector.x, directionVector.z) * Mathf.Rad2Deg + characterCamera.eulerAngles.y;            //формируем угол поворота, подмешивая сюда поворот камеры по горизонтали
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, rotationAngle, ref smoothVelocity, smoothTime);                        //сглаживаем, чтоб не дергался
-            
+
             transform.rotation = Quaternion.Euler(0f, rotationAngle, 0f);               //поворачиваем модель
-            Vector3 move = Quaternion.Euler(0f, rotationAngle, 0f)*Vector3.forward;     //формируем вектор движения модели
+            Vector3 move = Quaternion.Euler(0f, rotationAngle, 0f) * Vector3.forward;     //формируем вектор движения модели
+           
+            move.y -= gravity;
+            
             controller.Move(move.normalized * speed * Time.deltaTime);                  //двигаем модель
-            directionVector = move;    
+            directionVector = move;
+
         }
         else
             animator.SetFloat("speed", Vector3.ClampMagnitude(directionVector, 0f).magnitude);//в аниматор передаем текущую длину вектора в качестве скорости движения персонажа, чтобы играть соответствующую анимацию
